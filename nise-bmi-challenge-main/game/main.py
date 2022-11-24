@@ -28,6 +28,7 @@ def get_row_col_from_mouse(pos):
     return row, col
 
 
+
 def main():
 
     window_open = True
@@ -39,9 +40,11 @@ def main():
 
         detection = game.field.smd['emg_trigger']
         game.pull = game.field.smd['pull_ball']
+        print('detection', detection)
         #print(detection)
-        if detection:
+        if detection==1:
             if game.pull:
+                print('test')
                 game.pull_ball()
                 game.field.smd['emg_trigger'] = 0
             else:
@@ -51,8 +54,11 @@ def main():
         game.field.smd['ball_x'] = game.field.ball.col
         game.field.smd['ball_y'] = game.field.ball.row
 
+        game.field.smd['player_x'] = game.field.player.col
+        game.field.smd['player_y'] = game.field.player.row
+
         # move with IMU input
-        if game.field.smd['move_direction'] is not 0:
+        if game.field.smd['move_direction'] != 0:
             game.move_player(game.field.smd['move_direction'])
 
 
@@ -84,9 +90,7 @@ def main():
                 row, col = get_row_col_from_mouse(pos)
                 game.select(row, col)
 
-            # position of player is updated only when an event occurs
-            game.field.smd['player_x'] = game.field.player.col
-            game.field.smd['player_y'] = game.field.player.row
+
 
         game.update()
 
