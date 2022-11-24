@@ -5,7 +5,7 @@ from matplotlib.gridspec import SubplotSpec, GridSpec
 import matplotlib.pyplot as plt
 from shared_memory_dict import SharedMemoryDict
 import time
-import socket
+#import socket
 import importlib
 
 import test_algo as ta
@@ -19,8 +19,8 @@ print("UDP target IP: %s" % UDP_IP)
 print("UDP target port: %s" % UDP_PORT)
 print("message: %s" % MESSAGE)
    
-sock = socket.socket(socket.AF_INET, # Internet
-                        socket.SOCK_DGRAM) # UDP
+#sock = socket.socket(socket.AF_INET, # Internet
+                        #socket.SOCK_DGRAM) # UDP
 
 # shared memory for EMG and ball and player positions
 smd = SharedMemoryDict(name='msg', size=1024)
@@ -75,7 +75,7 @@ def send_array_udp(intensity, number_vibros): #multiplicate all values in vib ar
         line = line + '\n'
 
         # send through UDP
-        sock.sendto(line.encode(), (UDP_IP, UDP_PORT))
+        #sock.sendto(line.encode(), (UDP_IP, UDP_PORT))
         j = 0
         #time.sleep(0.5)
 
@@ -87,7 +87,7 @@ time.sleep(0.5)
 while True:
 
 
-    
+    '''
     if smd['ball_x'] >=  5 or (smd['ball_x'] == 4 and smd['player_x'] >= smd['ball_x']): 
         direction = 0  
         direction1 = -1
@@ -97,6 +97,55 @@ while True:
         direction = 1
         direction1 = 1
         print(0)
+    '''
+
+    ball_right = smd['ball_x'] >= 5
+    ball_player_aligned_y = smd['ball_y'] == smd['player_y']
+    
+    ball_player_aligned_x = smd['ball_x'] == smd['player_x']
+    ball_goal_aligned_x = smd['ball_x'] == 4 or smd['ball_x'] == 5 
+    ball_goal_player_aligned = ball_goal_aligned_x and ball_player_aligned_x 
+
+    action_position = np.abs(smd['ball_x'] - smd['player_x'] == 1)
+    pull_position = (smd["player_x"] < smd["ball_x"] and ball_right) or (smd["player_x"] < smd["ball_x"] and not ball_right)
+
+    player_below_ball = smd['player_y'] < smd['ball_y']
+    score_position = smd['player_y'] == smd['ball_y'] + 1
+
+    if not ball_goal_player_aligned :
+        if not ball_goal_aligned_x:
+
+            if not ball_player_aligned_y:
+                ta.go_down(smd)
+
+            else: # ball on same row as ball -> go direction of ball 
+
+                if not action_position: #if not next to the ball on x axis 
+                    direction = int(smd['player_y'] < smd['ball_y']) # 0 if go left, 1 if go right 
+                    ta.sideways(smd, direction)
+                else:
+                    if pull_position:
+                        ta.pull(smd)
+                    else:
+                        ta.shoot(smd)
+                    # check relative postion of goal and ball 
+                    #ta.pull(smd, direction) # if player on same row, one square away, but not aligned with goal
+  
+        else: # ball and goal are on same column, but not player 
+                # make player go under the ball -> ball goal player aligned 
+            if not player_below_ball:
+                ta.go_down(smd)
+            else: # move player behind ball 
+                direction = int(smd['player_y'] < smd['ball_y'])
+                ta.sideways(smd, direction)
+                
+    else:
+        if not score_position:
+            ta.go_up(smd)
+        else:
+            ta.shoot(smd)
+
+
 
     # Get the message from ESP32 with IMU and EMG
     #.readline()
@@ -106,6 +155,8 @@ while True:
         # print ball and player position
         
         print(f"Ball:\t{smd['ball_x'],smd['ball_y']}\tPlayer:\t{smd['player_x'], smd['player_y']}")
+
+        '''
         print(smd['action_to_int'])
 
         if smd['ball_y'] == 9:
@@ -122,11 +173,12 @@ while True:
     
         else:
             ta.scenario2(smd, direction)
+        '''
     
     
     # Send feedback intensities to ESP32 with vibrotactile motors
 
-    send_array_udp(intensity_array, number_vibros)
+    #send_array_udp(intensity_array, number_vibros)
     
 
 

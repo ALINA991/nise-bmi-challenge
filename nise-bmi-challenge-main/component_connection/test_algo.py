@@ -9,30 +9,28 @@ import time
 #vib = Vibrate()
 
 # get input differently : just defined that way to not get error
-
+def shoot(smd):
+    print('shoot')
 
 def go_up(smd): # get shared memory as input 
-    smd['move_direction'] = 1
+    #smd['move_direction'] = 1
     smd['action_to_int'] = 1
-    #vib.auomatic_mode(smd['action_to_int'])
-    print(smd['action_to_int'])
-
+    print('go up')
     time.sleep(0.5)
 
 def go_down(smd): 
-    smd['move_direction'] = 2
-
+    #smd['move_direction'] = 2
     smd["action_to_int"] = 2
     #vib.auomatic_mode(smd['action_to_int'])
-    print(smd['action_to_int'])
+    print('go down')
     time.sleep(0.5)
 
 
 def sideways(smd, direction): # set direction = 0 for right                          #           = 1 for left 
-    smd["move_direction"] = 3 + direction 
+    #smd["move_direction"] = 3 + direction 
     smd["action_to_int"] = 3 + direction 
     #vib.auomatic_mode(smd['action_to_int'])
-    print(smd['action_to_int'])
+    print('sideways', smd['action_to_int'])
     time.sleep(0.5)
 
 
@@ -53,12 +51,12 @@ def position_behind_ball(smd, direction):
     #assert pos_player == (smd['ball_y'] - 1, smd['ball_x']) # redo error handling 
 def pull(smd):
     print('pull')
-    smd['pull_ball'] = True
-    smd['emg_trigger'] = 1
+    #smd['pull_ball'] = True
+    #smd['emg_trigger'] = 1
     time.sleep(0.5)
-    smd['pull_ball'] = False
-    smd['action_to_int'] = 9
-    print(smd['action_to_int'])
+    #smd['pull_ball'] = False
+    #smd['action_to_int'] = 9
+    print('pull')
     #vib.auomatic_mode(smd['action_to_int'])
 
 def bring_ball_to_middle(smd, direction):
