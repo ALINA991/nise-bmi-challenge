@@ -102,15 +102,55 @@ while True:
     ball_right = smd['ball_x'] >= 5
     ball_player_aligned_y = smd['ball_y'] == smd['player_y']
     
+    pull_position = (smd["player_x"] > smd["ball_x"] and not ball_right) or (smd["player_x"] < smd["ball_x"] and ball_right)
+    player_below_ball = smd['player_y'] > smd['ball_y']
+
+
+
     ball_player_aligned_x = smd['ball_x'] == smd['player_x']
     ball_goal_aligned_x = smd['ball_x'] == 4 or smd['ball_x'] == 5 
+
     ball_goal_player_aligned = ball_goal_aligned_x and ball_player_aligned_x 
+    score_position = ball_goal_player_aligned and smd['player_y'] > smd['ball_y']
+    shoot_to_score_position = smd['player_y'] == smd['ball_y'] + 1
 
-    action_position = np.abs(smd['ball_x'] - smd['player_x'] == 1)
-    pull_position = (smd["player_x"] < smd["ball_x"] and ball_right) or (smd["player_x"] < smd["ball_x"] and not ball_right)
+    action_position_x = np.abs(smd['player_x'] - smd['ball_x']) == 1
 
-    player_below_ball = smd['player_y'] < smd['ball_y']
-    score_position = smd['player_y'] == smd['ball_y'] + 1
+    if not score_position:
+        if not ball_goal_aligned_x:
+            if not ball_player_aligned_y: # ball is not on same row as ball 
+                if not player_below_ball:
+                    ta.go_down(smd)
+                else:
+                    ta.go_up(smd)
+            else: 
+                if not action_position_x:
+                    direction = int(smd['ball_x'] > smd['player_x'])  # 0 if go left, 1 if go right
+                    ta.sideways(smd, direction)
+                else:
+                    if not pull_position:
+                        ta.shoot(smd)
+                    else:
+                        ta.pull(smd)
+            # align ball and goal 
+    
+        else:
+            print('bring player behind ball')
+            if not player_below_ball:
+                ta.go_down(smd)
+            else:
+                direction = int(smd['ball_x'] > smd['player_x'])  # 0 if go left, 1 if go right
+                ta.sideways(smd, direction)
+            
+        # position behind ball 
+    else:
+        if not shoot_to_score_position:
+            ta.go_up(smd)
+        else:
+            ta.shoot(smd)
+
+
+    '''
 
     if not ball_goal_player_aligned :
         if not ball_goal_aligned_x:
@@ -144,7 +184,7 @@ while True:
             ta.go_up(smd)
         else:
             ta.shoot(smd)
-
+    '''
 
 
     # Get the message from ESP32 with IMU and EMG
