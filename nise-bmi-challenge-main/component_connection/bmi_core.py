@@ -44,6 +44,7 @@ intensity_array = [0,0,0,0]
 
 
 counter = 0
+vib = Vibrate()
 
 def send_array_udp(intensity, number_vibros): #multiplicate all values in vib array with 255 and make them feelable!
         '''
@@ -87,6 +88,9 @@ time.sleep(0.5)
 
 
 while True:
+
+    vib.auomatic_mode(smd['action_to_int'])
+
     ball_goal_aligned_x = smd['ball_x'] == 4 or smd['ball_x'] == 5 
     ball_player_aligned_x = smd['ball_x'] == smd['player_x']
 
@@ -108,11 +112,9 @@ while True:
 
 
     if not score_position: # if not positions from top: goal, ball, player 
-
-        if not ball_on_edge:
+        if not ball_on_edge: # handle edge case when cannot go belwo ball 
 
             if not ball_goal_aligned_x: # if ball and goal not aligned 
-
                 if not ball_player_aligned_x: # if ball and player are not in same column
 
                     if not ball_player_aligned_y: # ball is not in same row as player
@@ -121,7 +123,6 @@ while True:
                             tav.go_down(smd)
                         else:
                             tav.go_up(smd)
-
                     else: 
                         if not action_position_x:
                             direction = int(smd['ball_x'] > smd['player_x'])  # 0 if go left, 1 if go right
@@ -135,7 +136,6 @@ while True:
                 else: # move sideways into field
                     direction = int(not ball_right)
                     tav.sideways(smd, direction)
-
             else:
                 if not player_below_ball:
                     tav.go_down(smd)
@@ -154,13 +154,12 @@ while True:
                 else:
                     tav.pull(smd)
 
-    else:
+    else: # shoot and run until goal
             if not shoot_to_score_position:
                 tav.go_up(smd)
             else:
                 tav.shoot(smd)
             
-
 
 
     '''
