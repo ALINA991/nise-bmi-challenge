@@ -5,11 +5,12 @@ from matplotlib.gridspec import SubplotSpec, GridSpec
 import matplotlib.pyplot as plt
 from shared_memory_dict import SharedMemoryDict
 import time
-import socket
+#import socket
 import importlib
 
-import test_algo as ta
-importlib.reload(ta)
+import test_algo_vib as tav
+importlib.reload(tav)
+from vibratingpattern import Vibrate
 
 # UDP network
 UDP_IP = "192.168.4.1"
@@ -19,8 +20,9 @@ print("UDP target IP: %s" % UDP_IP)
 print("UDP target port: %s" % UDP_PORT)
 print("message: %s" % MESSAGE)
    
-sock = socket.socket(socket.AF_INET, # Internet
-                        socket.SOCK_DGRAM) # UDP
+vib = Vibrate()
+#sock = socket.socket(socket.AF_INET, # Internet
+                        #socket.SOCK_DGRAM) # UDP
 
 # shared memory for EMG and ball and player positions
 smd = SharedMemoryDict(name='msg', size=1024)
@@ -42,6 +44,7 @@ intensity_array = [0,0,0,0]
 
 
 counter = 0
+vib = Vibrate()
 
 def send_array_udp(intensity, number_vibros): #multiplicate all values in vib array with 255 and make them feelable!
         '''
@@ -75,7 +78,7 @@ def send_array_udp(intensity, number_vibros): #multiplicate all values in vib ar
         line = line + '\n'
 
         # send through UDP
-        sock.sendto(line.encode(), (UDP_IP, UDP_PORT))
+        #sock.sendto(line.encode(), (UDP_IP, UDP_PORT))
         j = 0
         #time.sleep(0.5)
 
@@ -86,17 +89,81 @@ time.sleep(0.5)
 
 while True:
 
+    vib.auomatic_mode(smd['action_to_int'])
 
+    ball_goal_aligned_x = smd['ball_x'] == 4 or smd['ball_x'] == 5 
+    ball_player_aligned_x = smd['ball_x'] == smd['player_x']
+
+    ball_goal_player_aligned = ball_goal_aligned_x and ball_player_aligned_x 
+    score_position = ball_goal_player_aligned and smd['player_y'] > smd['ball_y']
+    shoot_to_score_position = smd['player_y'] == smd['ball_y'] + 1
+
+    action_position_x = np.abs(smd['player_x'] - smd['ball_x']) == 1
+
+    ball_right = smd['ball_x'] >= 5
+    ball_player_aligned_y = smd['ball_y'] == smd['player_y']
     
-    if smd['ball_x'] >=  5 or (smd['ball_x'] == 4 and smd['player_x'] >= smd['ball_x']): 
-        direction = 0  
-        direction1 = -1
-        print(1)
-    
-    elif smd['ball_x'] <= 4 or (smd['ball_x'] == 5 and smd["player_x"] <= smd['ball_x']): 
-        direction = 1
-        direction1 = 1
-        print(0)
+    pull_position_x = (smd["player_x"] > smd["ball_x"] and not ball_right) or (smd["player_x"] < smd["ball_x"] and ball_right)
+
+    pull_position_y = smd["player_y"] +1 == smd["ball_y"]
+    player_below_ball = smd['player_y'] > smd['ball_y']
+
+    ball_on_edge = smd['ball_y'] == 9
+
+
+    if not score_position: # if not positions from top: goal, ball, player 
+        if not ball_on_edge: # handle edge case when cannot go belwo ball 
+
+            if not ball_goal_aligned_x: # if ball and goal not aligned 
+                if not ball_player_aligned_x: # if ball and player are not in same column
+
+                    if not ball_player_aligned_y: # ball is not in same row as player
+
+                        if not player_below_ball:
+                            tav.go_down(smd)
+                        else:
+                            tav.go_up(smd)
+                    else: 
+                        if not action_position_x:
+                            direction = int(smd['ball_x'] > smd['player_x'])  # 0 if go left, 1 if go right
+                            tav.sideways(smd, direction)
+                        else:
+                            if not pull_position_x:
+                                tav.shoot(smd)
+                            else:
+                                tav.pull(smd)
+                        # align ball and goal 
+                else: # move sideways into field
+                    direction = int(not ball_right)
+                    tav.sideways(smd, direction)
+            else:
+                if not player_below_ball:
+                    tav.go_down(smd)
+                else:
+                    direction = int(smd['ball_x'] > smd['player_x'])  # 0 if go left, 1 if go right
+                    tav.sideways(smd, direction)
+            # position behind ball 
+
+        else: # if the ball is on the lower edge of field
+            if not ball_player_aligned_x:  # bring player to same column
+                direction = int(smd['ball_x'] > smd['player_x']) 
+                tav.sideways(smd, direction)
+            else: # on same colums -> bring to ball 
+                if not pull_position_y:
+                    tav.go_down(smd)
+                else:
+                    tav.pull(smd)
+
+    else: # shoot and run until goal
+            if not shoot_to_score_position:
+                tav.go_up(smd)
+            else:
+                tav.shoot(smd)
+            
+
+
+    '''
+
 
     # Get the message from ESP32 with IMU and EMG
     #.readline()
@@ -106,27 +173,15 @@ while True:
         # print ball and player position
         
         print(f"Ball:\t{smd['ball_x'],smd['ball_y']}\tPlayer:\t{smd['player_x'], smd['player_y']}")
-        print(smd['action_to_int'])
 
-        if smd['ball_y'] == 9:
-            ta.scenario0(smd, direction)
+        '''
 
-        if (smd["player_x"] < smd["ball_x"] and smd["ball_x"] <= 5)  or  (smd["player_x"] > smd["ball_x"] and smd["ball_x"]  >= 4 and not (smd['ball_x'] == 0 or smd['ball_x'] == 9)):
-            ta.scenario1(smd, direction)
-
-        elif smd["player_x"] == smd["ball_x"] :
-            if smd["ball_x"] == 4 or smd["ball_x"] == 5:
-                ta.scenario4(smd)
-            else:
-                ta.scenario3(smd, direction)
-    
-        else:
-            ta.scenario2(smd, direction)
+  
     
     
     # Send feedback intensities to ESP32 with vibrotactile motors
 
-    send_array_udp(intensity_array, number_vibros)
+    #send_array_udp(intensity_array, number_vibros)
     
 
 

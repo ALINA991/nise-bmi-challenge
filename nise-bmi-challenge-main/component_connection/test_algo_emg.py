@@ -11,6 +11,7 @@ import time
 # get input differently : just defined that way to not get error
 def shoot(smd):
     print('shoot')
+    
 
 def go_up(smd): # get shared memory as input 
     #smd['move_direction'] = 1
