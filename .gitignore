@@ -1,0 +1,4 @@
+# VS code stuff 
+.vscode
+*.code-workspace
+__pycache__
