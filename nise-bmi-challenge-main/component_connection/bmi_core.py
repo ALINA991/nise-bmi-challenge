@@ -5,7 +5,7 @@ from matplotlib.gridspec import SubplotSpec, GridSpec
 import matplotlib.pyplot as plt
 from shared_memory_dict import SharedMemoryDict
 import time
-#import socket
+import socket
 import importlib
 
 import test_algo_vib as tav
@@ -21,8 +21,8 @@ print("UDP target port: %s" % UDP_PORT)
 print("message: %s" % MESSAGE)
    
 vib = Vibrate()
-#sock = socket.socket(socket.AF_INET, # Internet
-                        #socket.SOCK_DGRAM) # UDP
+sock = socket.socket(socket.AF_INET, # Internet
+                        socket.SOCK_DGRAM) # UDP
 
 # shared memory for EMG and ball and player positions
 smd = SharedMemoryDict(name='msg', size=1024)
@@ -46,10 +46,11 @@ intensity_array = [0,0,0,0]
 counter = 0
 vib = Vibrate()
 
-def send_array_udp(intensity, number_vibros): #multiplicate all values in vib array with 255 and make them feelable!
+def send_array_udp(intensity): #multiplicate all values in vib array with 255 and make them feelable!
         '''
         Send intensity array through UDP to ESP32 with vibromotors
         '''
+        number_vibros = len(intensity)
         line = ''
         j = 0
         dash_or_no_dash = False
@@ -76,20 +77,19 @@ def send_array_udp(intensity, number_vibros): #multiplicate all values in vib ar
                 line = line + '000'
             j += 1
         line = line + '\n'
-
         # send through UDP
-        #sock.sendto(line.encode(), (UDP_IP, UDP_PORT))
+        print(line.encode())
+        sock.sendto(line.encode(), (UDP_IP, UDP_PORT))
         j = 0
-        #time.sleep(0.5)
+        time.sleep(1)  # Has to be greater than message execute time 
 
-time.sleep(0.5)
 
 
 
 
 while True:
 
-    vib.auomatic_mode(smd['action_to_int'])
+    
 
     ball_goal_aligned_x = smd['ball_x'] == 4 or smd['ball_x'] == 5 
     ball_player_aligned_x = smd['ball_x'] == smd['player_x']
@@ -181,7 +181,7 @@ while True:
     
     # Send feedback intensities to ESP32 with vibrotactile motors
 
-    #send_array_udp(intensity_array, number_vibros)
+    send_array_udp(vib.automatic_mode(smd['action_to_int']))
     
 
 

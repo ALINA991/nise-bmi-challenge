@@ -5,9 +5,9 @@ class Vibrate:
     def __init__(self):
         self.player_pos = np.empty(2)
         self.ball_pos = np.empty(2)
-        self.strength = 5 # This is the minimum strength
+        self.strength = 4 # This is the minimum strength
 
-    def auomatic_mode(self, move_suggestion):
+    def automatic_mode(self, move_suggestion):
         '''Auto mode take in the prefered commmand from the algorithm and split the '''
         # message = np.zeros([6,4])
         if move_suggestion == 1:
@@ -25,22 +25,30 @@ class Vibrate:
 
 
     def up_message(self):
-        return np.asarray([self.strength,0,0,0])
+        message = np.zeros([5,4])
+        message[0:3,:] = np.asarray([self.strength,0,0,0])
+        return message.flatten()
 
     def down_message(self):
-        return np.asarray([0,self.strength,0,0])
+        message = np.zeros([5,4])
+        message[0:3,1] = self.strength
+        return message.flatten()
 
     def left_message(self):
-        return np.asarray([0,0,self.strength,0])
+        message = np.zeros([5,4])
+        message[0:3,2] = self.strength
+        return message.flatten()
 
     def right_message(self):
-        return np.asarray([0,0,0,self.strength])
+        message = np.zeros([5,4])
+        message[0:3,3] = self.strength 
+        return message.flatten()
 
     def kick_message(self):
-        return np.message([int(self.strength/3), int(self.strength/2),int(self.strength/3), 0])    
+        return self.clockwise_message()
 
     def pull_message(self):
-        return np.message([0,int(self.strength/3),int(self.strength/3), int(self.strength/3)])    
+        return self.on_off_on_message()
 
     def clockwise_message(self):
         ''' Return message of of 5x4
@@ -70,9 +78,17 @@ class Vibrate:
         '''
         message_array = np.asarray([[0,0,0,0],
                                     [3,3,3,3],
-                                    [7,7,7,7],
+                                    [5,5,5,5],
                                     [3,3,3,3],
                                     [0,0,0,0],])
+        return message_array.flatten()       
+
+    def on_off_on_message(self):
+        message_array = np.asarray([[6,6,6,6],
+                                    [0,0,0,0],
+                                    [3,3,3,3],
+                                    [0,0,0,0],
+                                    [6,6,6,6],])
         return message_array.flatten()       
 
 
