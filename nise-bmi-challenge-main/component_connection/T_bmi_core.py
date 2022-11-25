@@ -9,17 +9,7 @@ from shared_memory_dict import SharedMemoryDict
 import time
 import socket
 
-### Import Team Specific code 
-# import sys
-# from pathlib import Path
-# current_path = Path(__file__).parent.resolve() 
-# gamedir = current_path.parent
-# # print(one_up)
-# sys.path.append(str(gamedir))
-# # print(sys.path)
-# from decode_encode.vibratingpattern import Vibrate
 from vibratingpattern import Vibrate
-
 
 # UDP network   
 UDP_IP = "192.168.4.1"
@@ -42,7 +32,7 @@ smd["emg_trigger"] = None
 smd["move_direction"] = 0
 smd["pull_ball"] = False
 # 0: kick, up : 1, down, left, right,  9: pull
-number_vibros = 4
+
 # intensity_array = [5,5,5,5]
 
 # Also for getting information 
@@ -52,10 +42,11 @@ vibrate = Vibrate()
 
 counter = 0
 
-def send_array_udp(intensity, number_vibros): #multiplicate all values in vib array with 255 and make them feelable!
+def send_array_udp(intensity): #multiplicate all values in vib array with 255 and make them feelable!
         '''
         Send intensity array through UDP to ESP32 with vibromotors
         '''
+        number_vibros = len(intensity)
         line = ''
         j = 0
         dash_or_no_dash = False
@@ -82,12 +73,11 @@ def send_array_udp(intensity, number_vibros): #multiplicate all values in vib ar
                 line = line + '000'
             j += 1
         line = line + '\n'
-        # print(f'The line that it is sending {line}')
         # send through UDP
         print(line.encode())
         sock.sendto(line.encode(), (UDP_IP, UDP_PORT))
         j = 0
-        time.sleep(0.5)
+        time.sleep(1)  # Has to be greater than message execute time 
 
 
 while True:
@@ -99,7 +89,7 @@ while True:
         # print ball and player position
         # print(f"Ball:\t{smd['ball_x'], smd['ball_y']}\tPlayer:\t{smd['player_x'], smd['player_y']}")
 
-    new_msg = vibrate.run_maual_perception(player_pos=[smd['player_x'], smd['player_y']], 
+    new_msg = vibrate.run_manual_perception(player_pos=[smd['player_x'], smd['player_y']], 
         ball_pos=[smd['ball_x'], smd['ball_y']])
 
 
@@ -113,10 +103,13 @@ while True:
     #             counter += 1
 
 
-    message = [0,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6]
-    send_array_udp(message, number_vibros=16)
-    # send_array_udp(new_msg[0,:], number_vibros)
 
+    # message1 = vibrate.clockwise_message()
+    message2 = vibrate.ramp_up_down_message()
+
+    # send_array_udp(message1)
+    # send_array_udp(new_msg[0,:], number_vibros)
+    send_array_udp(message2)
 
 
     # send_array_udp(intensity_array, number_vibros)

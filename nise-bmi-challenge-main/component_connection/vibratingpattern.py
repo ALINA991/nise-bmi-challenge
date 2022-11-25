@@ -42,7 +42,45 @@ class Vibrate:
     def pull_message(self):
         return np.message([0,int(self.strength/3),int(self.strength/3), int(self.strength/3)])    
 
-    def run_maual_perception(self, player_pos, ball_pos):
+    def clockwise_message(self):
+        ''' Return message of of 5x4
+            Clockwise spin twice
+        '''
+        message_array = np.asarray([[7,0,2,0],
+                                [4,0,0,7],
+                                [2,7,0,4],
+                                [0,4,7,2],
+                                [0,2,4,0],])
+        return message_array.flatten()
+
+    def anticlockwise_message(self):
+        ''' Return message of of 5x4
+            Clockwise spin twice
+        '''
+        message_array = np.asarray([[7,0,2,0],
+                                [4,0,0,7],
+                                [2,7,0,4],
+                                [0,4,7,2],
+                                [0,2,4,0],])
+        return message_array.flatten()
+
+        
+    def ramp_up_down_message(self):
+        ''' Ramp everything up then down
+        '''
+        message_array = np.asarray([[0,0,0,0],
+                                    [3,3,3,3],
+                                    [7,7,7,7],
+                                    [3,3,3,3],
+                                    [0,0,0,0],])
+        return message_array.flatten()       
+
+
+    def run_manual_perception(self, player_pos, ball_pos):
+        ''' GIVE PLAYER THEIR POSITION WRT TO THE BALL 
+        OUTPUT: a flatten array of 4 x 6 that can be passed to the ESP 
+            for vibration output
+        '''
         self.player_pos = np.asarray(player_pos)
         self.ball_pos = np.asarray(ball_pos)
         West , North = self._distance_to_ball(self.player_pos, self.ball_pos)
@@ -79,7 +117,7 @@ class Vibrate:
                 message[i,3] = self._adapted_strength(West)
                 West += 1 
 
-        return message
+        return message.flatten()
 
 #%%
     def _adapted_strength(self,current_pos): 
