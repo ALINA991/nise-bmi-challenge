@@ -187,3 +187,5 @@ while True:
 
     counter += 1
         
+
+### Possibly that emg trigger doesn't get reset quick enough so the player shoot twice

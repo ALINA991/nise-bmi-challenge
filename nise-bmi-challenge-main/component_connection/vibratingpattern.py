@@ -48,7 +48,7 @@ class Vibrate:
         return self.clockwise_message()
 
     def pull_message(self):
-        return self.on_off_on_message()
+        return self.anticlockwise_message()
 
     def clockwise_message(self):
         ''' Return message of of 5x4
@@ -65,11 +65,11 @@ class Vibrate:
         ''' Return message of of 5x4
             Clockwise spin twice
         '''
-        message_array = np.asarray([[7,0,2,0],
-                                [4,0,0,7],
-                                [2,7,0,4],
-                                [0,4,7,2],
-                                [0,2,4,0],])
+        message_array = np.asarray([[7,0,0,0],
+                                    [4,0,7,0],
+                                    [2,7,4,0],
+                                    [0,4,2,7],
+                                    [0,2,0,4],])
         return message_array.flatten()
 
         
