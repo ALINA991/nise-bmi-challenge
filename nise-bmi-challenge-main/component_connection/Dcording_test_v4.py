@@ -1,7 +1,7 @@
 # %%  source pyt3/bin/activate
 import serial
 import numpy as np
-# import scipy as sp
+import scipy as sp
 from matplotlib.gridspec import SubplotSpec, GridSpec
 import matplotlib.pyplot as plt
 from shared_memory_dict import SharedMemoryDict
@@ -35,8 +35,7 @@ number_vibros = 4
 intensity_array = [0,0,0,0]
 
 # port = serial.Serial('COM9', baudrate=512000) # Windows
-# port = serial.Serial(port='/dev/cu.usbserial-0285F948', baudrate=500000)
-port = serial.Serial(port='/dev/ttyUSB0',baudrate=500000)  # Linux
+port = serial.Serial(port='/dev/cu.usbserial-0285F948', baudrate=500000)
 
 counter = 0
 def send_array_udp(intensity, number_vibros): #multiplicate all values in vib array with 255 and make them feelable!
@@ -85,8 +84,8 @@ acc_x_vec = []
 trial = 0
 counter = 0
 th_acc = 20
-th_pitch = 35 #50
-th_roll = 35 #60
+th_pitch = 50
+th_roll = 60
 interval = 50
 acc_x_interval = 100
 acc_z_interval = 100
@@ -100,6 +99,7 @@ pitch_action = [3,4]
 roll_action = [2,1]
 kick_triger_x = 100    #kick=1, pull = 0
 kick_triger_z = 100    #kick=1, pull = 0
+
 
 
 def movement_command(direction, threshold, interval, detect, action):
@@ -127,7 +127,7 @@ def acc_x_command(direction, threshold, interval, detect, action):
             smd["emg_trigger"] = 1
             smd['pull_ball'] = True
             print(action)
-            time.sleep(0.25)
+            time.sleep(0.5)
         #     smd["emg_trigger"] = 1
         #     smd['pull_ball'] = False
             detect = 1
@@ -144,7 +144,7 @@ def acc_z_command(direction, threshold, interval, detect, action):
             smd["emg_trigger"] = 1
             smd['pull_ball'] = False
             print(action)
-            time.sleep(0.25)
+            time.sleep(0.5)
             detect = 1
     if detect>=1 and detect < interval: 
         detect += 1
@@ -152,6 +152,74 @@ def acc_z_command(direction, threshold, interval, detect, action):
         detect = 0
     return detect
 
+# def emg_command(emg, threshold, window_size, action):
+    # c =0
+    # count = []
+    # while c < window_size:
+    #     count.append(emg)
+    # baseline = np.mean(count)
+    # max_value = abs(max(count)-baseline)
+    # min_value = abs(min(count)-baseline)
+    # band = max(max_value,min_value)
+    # if emg > baseline + band or emg <  baseline - band:
+    #     while c < window_size:
+    #         count.append(emg)
+    # baseline2 = np.mean(count)
+    # if baseline2 - baseline > thr:
+    #     action
+    # else:
+    #     baseline = baseline2
+
+window_size = 1
+threshold = 20
+freezing_time = 200
+isit = 0
+hh = 0
+freeze = 0
+refer_point = 0
+
+def emg_command(emg, threshold, window_size, action, refer_point,hh, isit, freeze, freezing_time):
+    # c =0
+    
+    hh += 1
+    #print(emg - refer_point/hh - threshold)
+    if freeze == 0:
+        refer_point += emg
+
+        if emg > refer_point/hh + threshold:
+            isit +=1
+        #print("isit", isit)
+        #print("window sie", window_size)
+        if isit == window_size:
+            # print("jfgdhgkjdhgkthuuy")
+            smd["emg_trigger"] = 1
+            smd['pull_ball'] = False
+            print(action)
+            freeze += 1
+    elif freeze< freezing_time and freeze > 0:
+        freeze += 1
+    else:
+        freeze = 0
+        refer_point = 0
+        hh = 0
+        isit = 0
+
+    return freeze, hh, refer_point, isit
+
+
+    # if emg > threshold and detect == 0:
+    #         # smd["emg_trigger"] = 1
+    #         # smd['pull_ball'] = True
+    #         smd["emg_trigger"] = 1
+    #         smd['pull_ball'] = False
+    #         print(action)
+    #         time.sleep(0.5)
+    #         detect = 1
+    # if detect>=1 and detect < interval: 
+    #     detect += 1
+    # if detect == interval:
+    #     detect = 0
+    # return detect
     
     
     # if direction > threshold and detect==0:
@@ -186,7 +254,8 @@ def acc_z_command(direction, threshold, interval, detect, action):
 
 
 
-acc_data = []
+emg_data = []
+
 while True:
     # smallar than 1 sec
     # while counter<300:
@@ -194,62 +263,63 @@ while True:
     msg = port.readline()   #PROBLEMMP
     # msg1 = msg.decode('utf-8')    #trans into str
     msg = str(msg)
-    # print(msg)
     msg = msg.lstrip("b'")
     msg = msg.rstrip("\\r\\n'")
     msg = msg.split("\\t")
-    try: 
-        # gyro_x = float(msg[0])
-        # gyro_y = float(msg[1])
-        # gyro_z = float(msg[2])
-        acc_x = float(msg[3])  # Excustion push (1 negative, 2 pos) and pull (1 pos, 2 neg) .  th: 20
-        # acc_y = float(msg[4])
-        acc_z = float(msg[5])  #switch 
-        # mag_x = float(msg[6])
-        # mag_y = float(msg[7])
-        # mag_z = float(msg[8])
-        pitch = float(msg[9])   # // pitch:   positive left, negative right   th 50
-        roll = float(msg[10])   #  //roll:    up negative, back positive   th 70
-        # rms = float(msg[11])
-        # acc_data.append(acc_x)
-        # acc_x_vec.append(acc_x) 
-        detect_pitch = movement_command(pitch, th_pitch, interval, detect_pitch, pitch_action)
-        detect_roll = movement_command(roll, th_roll, interval, detect_roll, roll_action)
-        detect_acc_x = acc_x_command(acc_x, th_acc, interval, detect_acc_x, acc_x_action)
-        detect_acc_z = acc_z_command(acc_z, th_acc, interval, detect_acc_z, acc_z_action)
-        # print(kick_triger)
-        # print(kick_triger)
-        # msg_vec.append(msg)
-        # plt.show()
-        # plt.scatter(counter,msg)
 
-        # # Get current ball and player positions from shared memory
-        # if counter % 10 == 0:
-        #     # print ball and player position
-        # # print(f"Ball:\t{smd['ball_x'], smd['ball_y']}\tPlayer:\t{smd['player_x'], smd['player_y']}")
-        #     # for cutoff in [.03, .05, .1]:
-        #     #     b, a = sp.signal.butter(3, cutoff)
-        #     #     filtered = sp.signal.filtfilt(b, a, data)
-        #     #     filtered_vec.append(filtered)
-        #     # plt.plot(filtered_vec)
-        #     # plt.show()
+    # gyro_x = float(msg[0])
+    # gyro_y = float(msg[1])
+    # gyro_z = float(msg[2])
+    acc_x = float(msg[3])  # Excustion push (1 negative, 2 pos) and pull (1 pos, 2 neg) .  th: 20
+    # acc_y = float(msg[4])
+    acc_z = float(msg[5])  #switch 
+    # mag_x = float(msg[6])
+    # mag_y = float(msg[7])
+    # mag_z = float(msg[8])
+    pitch = float(msg[9])   # // pitch:   positive left, negative right   th 50
+    roll = float(msg[10])   #  //roll:    up negative, back positive   th 70
+    rms = float(msg[11])
+    emg_data.append(rms)
+    # acc_data.append(acc_x)
+    # acc_x_vec.append(acc_x) 
+    detect_pitch = movement_command(pitch, th_pitch, interval, detect_pitch, pitch_action)
+    detect_roll = movement_command(roll, th_roll, interval, detect_roll, roll_action)
+    detect_acc_x = acc_x_command(acc_x, th_acc, interval, detect_acc_x, acc_x_action)
+    # detect_acc_z = acc_z_command(acc_z, th_acc, interval, detect_acc_z, acc_z_action)
+    freeze, hh, refer_point, isit = emg_command(rms, threshold, window_size, acc_z_action, refer_point,hh, isit, freeze, freezing_time)
 
-        # # Send feedback intensities to ESP32 with vibrotactile motors
-        # send_array_udp(intensity_array, number_vibros)
-        counter += 1
-        
-        # np.save('test2', msg_vec)
-        # plt.figure()
-        # plt.plot(np.linspace(1,len(msg_vec)-1,len(msg_vec)),msg_vec)
-        # plt.xlim((10,len(msg_vec)-1))
-        # plt.savefig('fig_2')
-        #print('holaaaaaa')
-        # cc =+1
-    except: 
-        print("Something Wrong with the message")
-        # print(msg)
-        pass
+    # print(kick_triger)
+    # print(kick_triger)
+    # msg_vec.append(msg)
+    # plt.show()
+    # plt.scatter(counter,msg)
 
+    # # Get current ball and player positions from shared memory
+    # if counter % 10 == 0:
+    #     # print ball and player position
+    # # print(f"Ball:\t{smd['ball_x'], smd['ball_y']}\tPlayer:\t{smd['player_x'], smd['player_y']}")
+    #     # for cutoff in [.03, .05, .1]:
+    #     #     b, a = sp.signal.butter(3, cutoff)
+    #     #     filtered = sp.signal.filtfilt(b, a, data)
+    #     #     filtered_vec.append(filtered)
+    #     # plt.plot(filtered_vec)
+    #     # plt.show()
+
+    # # Send feedback intensities to ESP32 with vibrotactile motors
+    # send_array_udp(intensity_array, number_vibros)
+    counter += 1
+    
+    # np.save('test2', msg_vec)
+    # plt.figure()
+    # plt.plot(np.linspace(1,len(msg_vec)-1,len(msg_vec)),msg_vec)
+    # plt.xlim((10,len(msg_vec)-1))
+    # plt.savefig('fig_2')
+    #print('holaaaaaa')
+    # cc =+1
+
+plt.figure()
+plt.plot(range(len(emg_data)),emg_data)
+plt.show()
 # plt.figure()
 # #plt.plot(np.linspace(0,len(acc_data)-1,len(acc_data)), acc_data)
 # plt.plot(acc_data)
