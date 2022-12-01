@@ -36,7 +36,7 @@ intensity_array = [0,0,0,0]
 
 # port = serial.Serial('COM9', baudrate=512000) # Windows
 # port = serial.Serial(port='/dev/cu.usbserial-0285F948', baudrate=500000)
-port = serial.Serial(port='/dev/ttyUSB1', baudrate=500000)
+port = serial.Serial(port='/dev/ttyUSB2', baudrate=500000)
 
 counter = 0
 def send_array_udp(intensity, number_vibros): #multiplicate all values in vib array with 255 and make them feelable!
@@ -84,9 +84,9 @@ detect_vec = []
 acc_x_vec = []
 trial = 0
 counter = 0
-th_acc = 20
-th_pitch = 50
-th_roll = 50
+th_acc = 10
+th_pitch = 20
+th_roll = 20
 interval = 50
 acc_x_interval = 100
 acc_z_interval = 100
