@@ -29,13 +29,15 @@ smd["ball_y"] = 0
 smd["player_x"] = 0
 smd["player_y"] = 0
 smd["emg_trigger"] = None
-smd["emg_triggertoaction"] = {"kick":0, "up": 1, "down" : 2, "right": 3, "left" : 4, "pull": 9}
+# smd["emg_triggertoaction"] = {"kick":0, "up": 1, "down" : 2, "right": 3, "left" : 4, "pull": 9}
 
 number_vibros = 4
 intensity_array = [0,0,0,0]
 
 # port = serial.Serial('COM9', baudrate=512000) # Windows
-port = serial.Serial(port='/dev/cu.usbserial-0285F948', baudrate=500000)
+# port = serial.Serial(port='/dev/cu.usbserial-0285F948', baudrate=500000)
+port = serial.Serial(port='/dev/ttyUSB2', baudrate=500000)
+# port = serial.Serial(port='/dev/cu.usbserial-0285F948', baudrate=500000)
 
 counter = 0
 def send_array_udp(intensity, number_vibros): #multiplicate all values in vib array with 255 and make them feelable!
@@ -83,9 +85,9 @@ detect_vec = []
 acc_x_vec = []
 trial = 0
 counter = 0
-th_acc = 20
-th_pitch = 50
-th_roll = 60
+th_acc = 10 # 20
+th_pitch = 20 # 50
+th_roll = 20 # 60
 interval = 50
 acc_x_interval = 100
 acc_z_interval = 100
@@ -260,53 +262,63 @@ while True:
     # smallar than 1 sec
     # while counter<300:
     # Get the message from ESP32 with IMU and EMG
-    msg = port.readline()   #PROBLEMMP
-    # msg1 = msg.decode('utf-8')    #trans into str
-    msg = str(msg)
-    msg = msg.lstrip("b'")
-    msg = msg.rstrip("\\r\\n'")
-    msg = msg.split("\\t")
+    # print("working")
 
-    # gyro_x = float(msg[0])
-    # gyro_y = float(msg[1])
-    # gyro_z = float(msg[2])
-    acc_x = float(msg[3])  # Excustion push (1 negative, 2 pos) and pull (1 pos, 2 neg) .  th: 20
-    # acc_y = float(msg[4])
-    acc_z = float(msg[5])  #switch 
-    # mag_x = float(msg[6])
-    # mag_y = float(msg[7])
-    # mag_z = float(msg[8])
-    pitch = float(msg[9])   # // pitch:   positive left, negative right   th 50
-    roll = float(msg[10])   #  //roll:    up negative, back positive   th 70
-    rms = float(msg[11])
-    emg_data.append(rms)
-    # acc_data.append(acc_x)
-    # acc_x_vec.append(acc_x) 
-    detect_pitch = movement_command(pitch, th_pitch, interval, detect_pitch, pitch_action)
-    detect_roll = movement_command(roll, th_roll, interval, detect_roll, roll_action)
-    detect_acc_x = acc_x_command(acc_x, th_acc, interval, detect_acc_x, acc_x_action)
-    # detect_acc_z = acc_z_command(acc_z, th_acc, interval, detect_acc_z, acc_z_action)
-    freeze, hh, refer_point, isit = emg_command(rms, threshold, window_size, acc_z_action, refer_point,hh, isit, freeze, freezing_time)
+    try : 
+        # print("attempt to read message")
+        msg = port.readline()   #PROBLEMMP
+        # msg1 = msg.decode('utf-8')    #trans into str
+        msg = str(msg)
+        msg = msg.lstrip("b'")
+        msg = msg.rstrip("\\r\\n'")
+        msg = msg.split("\\t")
 
-    # print(kick_triger)
-    # print(kick_triger)
-    # msg_vec.append(msg)
-    # plt.show()
-    # plt.scatter(counter,msg)
+        # gyro_x = float(msg[0])
+        # gyro_y = float(msg[1])
+        # gyro_z = float(msg[2])
+        acc_x = float(msg[3])  # Excustion push (1 negative, 2 pos) and pull (1 pos, 2 neg) .  th: 20
+        # print("attempt to read acc")
+        # acc_y = float(msg[4])
+        acc_z = float(msg[5])  #switch 
+        # mag_x = float(msg[6])
+        # mag_y = float(msg[7])
+        # mag_z = float(msg[8])
+        pitch = float(msg[9])   # // pitch:   positive left, negative right   th 50
+        roll = float(msg[10])   #  //roll:    up negative, back positive   th 70
+        rms = float(msg[11])
+        # print("attempt to read emg data ")
+        emg_data.append(rms)
+        # acc_data.append(acc_x)
+        # acc_x_vec.append(acc_x) 
+        detect_pitch = movement_command(pitch, th_pitch, interval, detect_pitch, pitch_action)
+        detect_roll = movement_command(roll, th_roll, interval, detect_roll, roll_action)
+        detect_acc_x = acc_x_command(acc_x, th_acc, interval, detect_acc_x, acc_x_action)
+        # detect_acc_z = acc_z_command(acc_z, th_acc, interval, detect_acc_z, acc_z_action)
+        freeze, hh, refer_point, isit = emg_command(rms, threshold, window_size, acc_z_action, refer_point,hh, isit, freeze, freezing_time)
 
-    # # Get current ball and player positions from shared memory
-    # if counter % 10 == 0:
-    #     # print ball and player position
-    # # print(f"Ball:\t{smd['ball_x'], smd['ball_y']}\tPlayer:\t{smd['player_x'], smd['player_y']}")
-    #     # for cutoff in [.03, .05, .1]:
-    #     #     b, a = sp.signal.butter(3, cutoff)
-    #     #     filtered = sp.signal.filtfilt(b, a, data)
-    #     #     filtered_vec.append(filtered)
-    #     # plt.plot(filtered_vec)
-    #     # plt.show()
+        # print(kick_triger)
+        # print(kick_triger)
+        # msg_vec.append(msg)
+        # plt.show()
+        # plt.scatter(counter,msg)
 
-    # # Send feedback intensities to ESP32 with vibrotactile motors
-    # send_array_udp(intensity_array, number_vibros)
+        # # Get current ball and player positions from shared memory
+        # if counter % 10 == 0:
+        #     # print ball and player position
+        # # print(f"Ball:\t{smd['ball_x'], smd['ball_y']}\tPlayer:\t{smd['player_x'], smd['player_y']}")
+        #     # for cutoff in [.03, .05, .1]:
+        #     #     b, a = sp.signal.butter(3, cutoff)
+        #     #     filtered = sp.signal.filtfilt(b, a, data)
+        #     #     filtered_vec.append(filtered)
+        #     # plt.plot(filtered_vec)
+        #     # plt.show()
+
+        # # Send feedback intensities to ESP32 with vibrotactile motors
+        # send_array_udp(intensity_array, number_vibros)
+    except Exception :
+        print("message corrupted")
+        msg = 0
+        continue
     counter += 1
     
     # np.save('test2', msg_vec)
@@ -317,9 +329,17 @@ while True:
     #print('holaaaaaa')
     # cc =+1
 
-plt.figure()
-plt.plot(range(len(emg_data)),emg_data)
-plt.show()
+    # np.save('test2', msg_vec)
+    # plt.figure()
+    # plt.plot(np.linspace(1,len(msg_vec)-1,len(msg_vec)),msg_vec)
+    # plt.xlim((10,len(msg_vec)-1))
+    # plt.savefig('fig_2')
+    #print('holaaaaaa')
+    # cc =+1
+
+# plt.figure()
+# plt.plot(range(len(emg_data)),emg_data)
+# plt.show()
 # plt.figure()
 # #plt.plot(np.linspace(0,len(acc_data)-1,len(acc_data)), acc_data)
 # plt.plot(acc_data)

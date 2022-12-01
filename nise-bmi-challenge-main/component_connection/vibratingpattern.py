@@ -5,7 +5,7 @@ class Vibrate:
     def __init__(self):
         self.player_pos = np.empty(2)
         self.ball_pos = np.empty(2)
-        self.strength = 4 # This is the minimum strength
+        self.strength = 5 # This is the minimum strength
 
     def automatic_mode(self, move_suggestion):
         '''Auto mode take in the prefered commmand from the algorithm and split the '''
@@ -45,32 +45,35 @@ class Vibrate:
         return message.flatten()
 
     def kick_message(self):
-        return self.clockwise_message()
+        return self.tut_tut_tut()
 
     def pull_message(self):
-        return self.anticlockwise_message()
+        return self.clockwise_message()
 
     def clockwise_message(self):
         ''' Return message of of 5x4
             Clockwise spin twice
         '''
-        message_array = np.asarray([[7,0,2,0],
-                                [4,0,0,7],
-                                [2,7,0,4],
-                                [0,4,7,2],
-                                [0,2,4,0],])
+        s = self.strength
+        message_array = np.asarray([[s,    0, s-3,     0],  
+                                    [s-2,  0,   0,     s],   
+                                    [s-3,  s,   0,   s-2],  
+                                    [0,  s-2,   s,   s-3],  
+                                    [0,  s-3, s-2,    0],])
         return message_array.flatten()
 
     def anticlockwise_message(self):
         ''' Return message of of 5x4
             Clockwise spin twice
         '''
-        message_array = np.asarray([[7,0,0,0],
-                                    [4,0,7,0],
-                                    [2,7,4,0],
-                                    [0,4,2,7],
-                                    [0,2,0,4],])
+        s = self.strength
+        message_array = np.asarray([[s,	0,	0,	s-3],      
+                                    [s-2,	0,	s,	0],    
+                                    [s-3,	s,	s-2,	0],  
+                                    [0,	s-2,	s-3,	s],   
+                                    [0,	s-3,	0,	s-2],])
         return message_array.flatten()
+
 
         
     def ramp_up_down_message(self):
@@ -91,6 +94,13 @@ class Vibrate:
                                     [6,6,6,6],])
         return message_array.flatten()       
 
+    def tut_tut_tut(self):
+        message_array = np.asarray([[6,6,6,6],
+                                    [0,0,0,0],
+                                    [6,6,6,6],
+                                    [0,0,0,0],
+                                    [6,6,6,6],])
+        return message_array.flatten()    
 
     def run_manual_perception(self, player_pos, ball_pos):
         ''' GIVE PLAYER THEIR POSITION WRT TO THE BALL 
