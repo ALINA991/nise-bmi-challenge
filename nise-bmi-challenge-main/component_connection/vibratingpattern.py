@@ -45,20 +45,20 @@ class Vibrate:
         return message.flatten()
 
     def kick_message(self):
-        return self.clockwise_message()
+        return self.tut_tut_tut()
 
     def pull_message(self):
-        return self.anticlockwise_message()
+        return self.clockwise_message()
 
     def clockwise_message(self):
         ''' Return message of of 5x4
             Clockwise spin twice
         '''
         s = self.strength
-        message_array = np.asarray([[s,    0, s-3,     0],  \
-                                    [s-2,  0,   0,     s],  \ 
-                                    [s-3,  s,   0,   s-2],  \
-                                    [0,  s-2,   s,   s-3],  \
+        message_array = np.asarray([[s,    0, s-3,     0],  
+                                    [s-2,  0,   0,     s],   
+                                    [s-3,  s,   0,   s-2],  
+                                    [0,  s-2,   s,   s-3],  
                                     [0,  s-3, s-2,    0],])
         return message_array.flatten()
 
@@ -67,10 +67,10 @@ class Vibrate:
             Clockwise spin twice
         '''
         s = self.strength
-        message_array = np.asarray([[s,	0,	0,	s-3],      \
-                                    [s-2,	0,	s,	0],    \
-                                    [s-3,	s,	s-2,	0],  \
-                                    [0,	s-2,	s-3,	s],   \
+        message_array = np.asarray([[s,	0,	0,	s-3],      
+                                    [s-2,	0,	s,	0],    
+                                    [s-3,	s,	s-2,	0],  
+                                    [0,	s-2,	s-3,	s],   
                                     [0,	s-3,	0,	s-2],])
         return message_array.flatten()
 
@@ -94,6 +94,13 @@ class Vibrate:
                                     [6,6,6,6],])
         return message_array.flatten()       
 
+    def tut_tut_tut(self):
+        message_array = np.asarray([[6,6,6,6],
+                                    [0,0,0,0],
+                                    [6,6,6,6],
+                                    [0,0,0,0],
+                                    [6,6,6,6],])
+        return message_array.flatten()    
 
     def run_manual_perception(self, player_pos, ball_pos):
         ''' GIVE PLAYER THEIR POSITION WRT TO THE BALL 

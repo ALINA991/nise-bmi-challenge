@@ -81,7 +81,7 @@ def send_array_udp(intensity): #multiplicate all values in vib array with 255 an
         print(line.encode())
         sock.sendto(line.encode(), (UDP_IP, UDP_PORT))
         j = 0
-        time.sleep(1)  # Has to be greater than message execute time 
+        time.sleep(0.75)  # Has to be greater than message execute time 
 
 
 
@@ -136,9 +136,13 @@ while True:
                 else: # move sideways into field
                     direction = int(not ball_right)
                     tav.sideways(smd, direction)
-            else:
+            else: # aligned on x axis 
+
                 if not player_below_ball:
-                    tav.go_down(smd)
+                    if not pull_position_y:
+                        tav.go_down(smd)
+                    else:
+                        tav.pull(smd)
                 else:
                     direction = int(smd['ball_x'] > smd['player_x'])  # 0 if go left, 1 if go right
                     tav.sideways(smd, direction)
