@@ -37,6 +37,7 @@ intensity_array = [0,0,0,0]
 # port = serial.Serial('COM9', baudrate=512000) # Windows
 # port = serial.Serial(port='/dev/cu.usbserial-0285F948', baudrate=500000)
 port = serial.Serial(port='/dev/ttyUSB2', baudrate=500000)
+# port = serial.Serial(port='/dev/cu.usbserial-0285F948', baudrate=500000)
 
 counter = 0
 def send_array_udp(intensity, number_vibros): #multiplicate all values in vib array with 255 and make them feelable!
@@ -84,9 +85,9 @@ detect_vec = []
 acc_x_vec = []
 trial = 0
 counter = 0
-th_acc = 10
-th_pitch = 20
-th_roll = 20
+th_acc = 10 # 20
+th_pitch = 20 # 50
+th_roll = 20 # 60
 interval = 50
 acc_x_interval = 100
 acc_z_interval = 100
@@ -316,9 +317,18 @@ while True:
         # send_array_udp(intensity_array, number_vibros)
     except Exception :
         print("message corrupted")
+        msg = 0
         continue
     counter += 1
     
+    # np.save('test2', msg_vec)
+    # plt.figure()
+    # plt.plot(np.linspace(1,len(msg_vec)-1,len(msg_vec)),msg_vec)
+    # plt.xlim((10,len(msg_vec)-1))
+    # plt.savefig('fig_2')
+    #print('holaaaaaa')
+    # cc =+1
+
     # np.save('test2', msg_vec)
     # plt.figure()
     # plt.plot(np.linspace(1,len(msg_vec)-1,len(msg_vec)),msg_vec)
