@@ -81,8 +81,15 @@ def send_array_udp(intensity): #multiplicate all values in vib array with 255 an
         print(line.encode())
         sock.sendto(line.encode(), (UDP_IP, UDP_PORT))
         j = 0
-        time.sleep(0.75)  # Has to be greater than message execute time 
-
+        dynamic_time_delay = len(intensity)/4*0.15
+        # DYNAMIC TIME DELAYING
+        # print(f'dynamic time delaying {dynamic_time_delay}')
+        # time.sleep(dynamic_time_delay)
+    
+        if len(intensity) < 9:
+            print(len(intensity))
+            time.sleep(0.15)  # Has to be greater than message execute time 
+        else: time.sleep(0.55)
 
 
 
@@ -164,24 +171,6 @@ while True:
             else:
                 tav.shoot(smd)
             
-
-
-    '''
-
-
-    # Get the message from ESP32 with IMU and EMG
-    #.readline()
-
-    # Get current ball and player positions from shared memory
-    if counter % 10 == 0:
-        # print ball and player position
-        
-        print(f"Ball:\t{smd['ball_x'],smd['ball_y']}\tPlayer:\t{smd['player_x'], smd['player_y']}")
-
-        '''
-
-  
-    
     
     # Send feedback intensities to ESP32 with vibrotactile motors
 

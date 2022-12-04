@@ -5,7 +5,7 @@ class Vibrate:
     def __init__(self):
         self.player_pos = np.empty(2)
         self.ball_pos = np.empty(2)
-        self.strength = 5 # This is the minimum strength
+        self.strength = 9 # This is the minimum strength
 
     def automatic_mode(self, move_suggestion):
         '''Auto mode take in the prefered commmand from the algorithm and split the '''
@@ -25,41 +25,40 @@ class Vibrate:
 
 
     def up_message(self):
-        message = np.zeros([5,4])
-        message[0:3,:] = np.asarray([self.strength,0,0,0])
+        message = np.zeros([1,4])
+        message[0:1,0] = self.strength
         return message.flatten()
 
     def down_message(self):
-        message = np.zeros([5,4])
-        message[0:3,1] = self.strength
+        message = np.zeros([1,4])
+        message[0:1,1] = self.strength
         return message.flatten()
 
     def left_message(self):
-        message = np.zeros([5,4])
-        message[0:3,2] = self.strength
+        message = np.zeros([1,4])
+        message[0:1,2] = self.strength - 1  # Correction due to left motor is extra strong
         return message.flatten()
 
     def right_message(self):
-        message = np.zeros([5,4])
-        message[0:3,3] = self.strength 
+        message = np.zeros([1,4])
+        message[0:1,3] = self.strength 
         return message.flatten()
 
     def kick_message(self):
-        return self.tut_tut_tut()
+        return self.clockwise_message()
 
     def pull_message(self):
-        return self.clockwise_message()
+        return self.negative_anticlockwise_message()
 
     def clockwise_message(self):
         ''' Return message of of 5x4
             Clockwise spin twice
         '''
         s = self.strength
-        message_array = np.asarray([[s,    0, s-3,     0],  
-                                    [s-2,  0,   0,     s],   
-                                    [s-3,  s,   0,   s-2],  
-                                    [0,  s-2,   s,   s-3],  
-                                    [0,  s-3, s-2,    0],])
+        message_array = np.asarray([[s,  0,   0,     0],  
+                                    [0,  0,   0,     s],   
+                                    [0,  s,   0,     0],  
+                                    [0,  0,   s,     0]])
         return message_array.flatten()
 
     def anticlockwise_message(self):
@@ -67,13 +66,22 @@ class Vibrate:
             Clockwise spin twice
         '''
         s = self.strength
-        message_array = np.asarray([[s,	0,	0,	s-3],      
-                                    [s-2,	0,	s,	0],    
-                                    [s-3,	s,	s-2,	0],  
-                                    [0,	s-2,	s-3,	s],   
-                                    [0,	s-3,	0,	s-2],])
+        message_array = np.asarray([[0,	    s,	    0,	    0],      
+                                    [0,	    0,	    0,	    s],    
+                                    [s,	    0,	    0,	    0],  
+                                    [0,	    0,	    s,	    0]])
         return message_array.flatten()
 
+    def negative_anticlockwise_message(self):
+        ''' Return message of of 5x4
+            Clockwise spin twice
+        '''
+        s = self.strength
+        message_array = np.asarray([[s,	    0,	    s,	    s],      
+                                    [s,	    s,	    s,	    0],    
+                                    [0,	    s,	    s,	    s],  
+                                    [s,	    s,	    0,	    s]])
+        return message_array.flatten()
 
         
     def ramp_up_down_message(self):
@@ -126,7 +134,7 @@ class Vibrate:
 
         Return: message of shape (6,4). (Message Length, Vibrator)
         '''
-        message = np.zeros([6,4])
+        message = np.zeros([5,4])  # (6,4) 
         
         ## Iterrate down 
         for i in [0,2]:
